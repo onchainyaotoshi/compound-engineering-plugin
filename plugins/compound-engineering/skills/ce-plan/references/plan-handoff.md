@@ -4,17 +4,17 @@ This file contains post-plan-writing instructions: document review, post-generat
 
 ## 5.3.8 Document Review
 
-After the confidence check (and any deepening), run the `document-review` skill on the plan file. Pass the plan path as the argument. When this step is reached, it is mandatory — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
+After the confidence check (and any deepening), run the `ce-doc-review` skill on the plan file. Pass the plan path as the argument. When this step is reached, it is mandatory — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
 
-The confidence check and document-review are complementary:
+The confidence check and ce-doc-review are complementary:
 - The confidence check strengthens rationale, sequencing, risk treatment, and grounding
 - Document-review checks coherence, feasibility, scope alignment, and surfaces role-specific issues
 
-If document-review returns findings that were auto-applied, note them briefly when presenting handoff options. If residual P0/P1 findings were surfaced, mention them so the user can decide whether to address them before proceeding.
+If ce-doc-review returns findings that were auto-applied, note them briefly when presenting handoff options. If residual P0/P1 findings were surfaced, mention them so the user can decide whether to address them before proceeding.
 
-When document-review returns "Review complete", proceed to Final Checks.
+When ce-doc-review returns "Review complete", proceed to Final Checks.
 
-**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, run `document-review` with `mode:headless` and the plan path. Headless mode applies auto-fixes silently and returns structured findings without interactive prompts. Address any P0/P1 findings before returning control to the caller.
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, run `ce-doc-review` with `mode:headless` and the plan path. Headless mode applies auto-fixes silently and returns structured findings without interactive prompts. Address any P0/P1 findings before returning control to the caller.
 
 ## 5.3.9 Final Checks and Cleanup
 
@@ -29,23 +29,23 @@ If artifact-backed mode was used:
 
 ## 5.4 Post-Generation Options
 
-**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, skip the interactive menu below and return control to the caller immediately. The plan file has already been written, the confidence check has already run, and document-review has already run — the caller (e.g., lfg, slfg) determines the next step.
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, skip the interactive menu below and return control to the caller immediately. The plan file has already been written, the confidence check has already run, and ce-doc-review has already run — the caller (e.g., lfg, slfg) determines the next step.
 
 After document-review completes, present the options using the platform's blocking question tool when available (see Interaction Method). Otherwise present numbered options in chat and wait for the user's reply before proceeding.
 
 **Question:** "Plan ready at `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`. What would you like to do next?"
 
 **Options:**
-1. **Start `/ce:work`** - Begin implementing this plan in the current environment (recommended)
+1. **Start `/ce-work`** - Begin implementing this plan in the current environment (recommended)
 2. **Open plan in editor** - Open the plan file for review
 3. **Run additional document review** - Another pass for further refinement
 4. **Share to Proof** - Upload the plan for collaborative review and sharing
-5. **Start `/ce:work` in another session** - Begin implementing in a separate agent session when the current platform supports it
+5. **Start `/ce-work` in another session** - Begin implementing in a separate agent session when the current platform supports it
 6. **Create Issue** - Create an issue in the configured tracker
 
 Based on selection:
 - **Open plan in editor** -> Open `docs/plans/<plan_filename>.md` using the current platform's file-open or editor mechanism (e.g., `open` on macOS, `xdg-open` on Linux, or the IDE's file-open API)
-- **Run additional document review** -> Load the `document-review` skill with the plan path for another pass
+- **Run additional document review** -> Load the `ce-doc-review` skill with the plan path for another pass
 - **Share to Proof** -> Upload the plan:
   ```bash
   CONTENT=$(cat docs/plans/<plan_filename>.md)
@@ -56,8 +56,8 @@ Based on selection:
   PROOF_URL=$(echo "$RESPONSE" | jq -r '.tokenUrl')
   ```
   Display `View & collaborate in Proof: <PROOF_URL>` if successful, then return to the options
-- **`/ce:work`** -> Call `/ce:work` with the plan path
-- **`/ce:work` in another session** -> If the current platform supports launching a separate agent session, start `/ce:work` with the plan path there. Otherwise, explain the limitation briefly and offer to run `/ce:work` in the current session instead.
+- **`/ce-work`** -> Call `/ce-work` with the plan path
+- **`/ce-work` in another session** -> If the current platform supports launching a separate agent session, start `/ce-work` with the plan path there. Otherwise, explain the limitation briefly and offer to run `/ce-work` in the current session instead.
 - **Create Issue** -> Follow the Issue Creation section below
 - **Other** -> Accept free text for revisions and loop back to options
 
@@ -84,4 +84,4 @@ When the user selects "Create Issue", detect their project tracker from `AGENTS.
 
 After issue creation:
 - Display the issue URL
-- Ask whether to proceed to `/ce:work`
+- Ask whether to proceed to `/ce-work`
