@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { isRiskFlag, normalize } from "../plugins/compound-engineering/skills/claude-permissions-optimizer/scripts/normalize.mjs"
+import { isRiskFlag, normalize } from "../plugins/compound-engineering/skills/ce-claude-permissions-optimizer/scripts/normalize.mjs"
 
 describe("isRiskFlag", () => {
   test("recognizes global risk flags", () => {
