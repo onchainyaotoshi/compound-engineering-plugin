@@ -9,6 +9,21 @@ All notable changes to the compound-engineering plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.66.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.65.0...compound-engineering-v2.66.0) (2026-04-14)
+
+
+### Features
+
+* **ce-optimize:** Auto-research loop for tuning system prompts / vector clustering / evaluating different code solution / etc ([#446](https://github.com/EveryInc/compound-engineering-plugin/issues/446)) ([8f20aa0](https://github.com/EveryInc/compound-engineering-plugin/commit/8f20aa0406a7cda4ff11da45b971e38681650678))
+
+
+### Bug Fixes
+
+* **ce-plan:** close escape hatches that let the skill abandon direct invocations ([#554](https://github.com/EveryInc/compound-engineering-plugin/issues/554)) ([e4d5f24](https://github.com/EveryInc/compound-engineering-plugin/commit/e4d5f241bd3945784905a32d7fb7ef9305c621e8))
+* **ce-review:** always fetch base branch to prevent stale merge-base ([#544](https://github.com/EveryInc/compound-engineering-plugin/issues/544)) ([4e0ed2c](https://github.com/EveryInc/compound-engineering-plugin/commit/4e0ed2cc8ddadf6d5504210e1210728e6f7cc9aa))
+* **document-review, review:** restrict reviewer agents to read-only tools ([#553](https://github.com/EveryInc/compound-engineering-plugin/issues/553)) ([e45c435](https://github.com/EveryInc/compound-engineering-plugin/commit/e45c435b996f7c0bf5ae0e23c0ab95b3fbd9204c))
+* **git-commit-push-pr:** rewrite descriptions as net result, not changelog ([#558](https://github.com/EveryInc/compound-engineering-plugin/issues/558)) ([a559903](https://github.com/EveryInc/compound-engineering-plugin/commit/a55990387d48fa7af598880746ff862cc8f10acd))
+
 ## [2.65.0](https://github.com/EveryInc/compound-engineering-plugin/compare/compound-engineering-v2.64.0...compound-engineering-v2.65.0) (2026-04-11)
 
 
