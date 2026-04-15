@@ -405,16 +405,21 @@ The orchestrator (this skill) stays on the default model because it handles inte
 
 #### Run ID
 
-Generate a unique run identifier before dispatching any agents. This ID scopes all agent artifact files and the post-review run artifact to the same directory.
+**Mode gate FIRST — read this before reading the bash block below.** If `mode:report-only` is active (see Mode Detection), do NOT execute the Run ID bash block. Do NOT generate `RUN_ID`. Do NOT run `mkdir -p ".context/compound-engineering/ce-review/..."`. Do NOT pass `{run_id}` to any persona sub-agent in Stage 4 Spawning. Do NOT write any file under `.context/compound-engineering/ce-review/`. Persona sub-agents return compact JSON inline only — the orchestrator keeps their responses in memory for Stage 5 merge, nothing hits disk.
+
+**If you are about to run `mkdir -p ".context/compound-engineering/ce-review/..."` while `mode:report-only` is active, STOP — you are violating the report-only contract.** The Mode Detection section says strictly "Review and report only, then stop with no edits, artifacts, todos, commits, pushes, or PR actions." The Report-only mode rules section says "Do not write `.context/compound-engineering/ce-review/<run-id>/`, do not create todo files". This third explicit reminder exists at the dispatch-integration point because on 2026-04-15 an orchestrator-level review run produced 11 persona JSON files under `.context/compound-engineering/ce-review/<fabricated-run-id>/` despite `mode:report-only` being in the prompt. The prose instructions above weren't enforced strongly enough at the point where `RUN_ID` generation happens.
+
+Generate a unique run identifier before dispatching any agents ONLY in `interactive`, `autofix`, or `headless` modes. This ID scopes all agent artifact files and the post-review run artifact to the same directory.
 
 ```bash
-RUN_ID=$(date +%Y%m%d-%H%M%S)-$(head -c4 /dev/urandom | od -An -tx1 | tr -d ' ')
-mkdir -p ".context/compound-engineering/ce-review/$RUN_ID"
+# ONLY in interactive / autofix / headless. Skip entirely in report-only.
+if [ "$MODE" != "report-only" ]; then
+  RUN_ID=$(date +%Y%m%d-%H%M%S)-$(head -c4 /dev/urandom | od -An -tx1 | tr -d ' ')
+  mkdir -p ".context/compound-engineering/ce-review/$RUN_ID"
+fi
 ```
 
-Pass `{run_id}` to every persona sub-agent so they can write their full analysis to `.context/compound-engineering/ce-review/{run_id}/{reviewer_name}.json`.
-
-**Report-only mode:** Skip run-id generation and directory creation. Do not pass `{run_id}` to agents. Agents return compact JSON only with no file write, consistent with report-only's no-write contract.
+When `RUN_ID` is set, pass `{run_id}` to every persona sub-agent so they can write their full analysis to `.context/compound-engineering/ce-review/{run_id}/{reviewer_name}.json`. When `RUN_ID` is unset (report-only), do not pass the placeholder — persona sub-agents receive no `{run_id}` field, their output contract is "return compact JSON inline only", and no file is created anywhere under `.context/compound-engineering/ce-review/`.
 
 #### Spawning
 
@@ -434,7 +439,7 @@ Persona sub-agents are **read-only** with respect to the project: they review an
 
 Read-only here means **non-mutating**, not "no shell access." Reviewer sub-agents may use non-mutating inspection commands when needed to gather evidence or verify scope, including read-oriented `git` / `gh` usage such as `git diff`, `git show`, `git blame`, `git log`, and `gh pr view`. They must not edit project files, change branches, commit, push, create PRs, or otherwise mutate the checkout or repository state.
 
-Each persona sub-agent writes full JSON (all schema fields) to `.context/compound-engineering/ce-review/{run_id}/{reviewer_name}.json` and returns compact JSON with merge-tier fields only:
+Each persona sub-agent writes full JSON (all schema fields) to `.context/compound-engineering/ce-review/{run_id}/{reviewer_name}.json` and returns compact JSON with merge-tier fields only. **In `mode:report-only`, `{run_id}` is unset (see Run ID subsection) — persona sub-agents must not write any file and return compact JSON inline only.** The compact JSON return has the same shape regardless of mode:
 
 ```json
 {
