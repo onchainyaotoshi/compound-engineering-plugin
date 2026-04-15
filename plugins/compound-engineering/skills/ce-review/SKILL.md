@@ -448,6 +448,30 @@ Detail-tier fields (`why_it_matters`, `evidence`) are in the artifact file only.
 
 **CE conditional agents** (schema-drift-detector, deployment-verification-agent) are also dispatched as standard Agent calls when applicable. Pass the same review context bundle plus the applicability reason (for example, which migration files triggered the agent). For schema-drift-detector specifically, pass the resolved review base branch explicitly so it never assumes `main`. Their output is unstructured and must be preserved for Stage 6 synthesis just like the CE always-on agents.
 
+#### Gemini CLI dispatch
+
+On Gemini CLI, persona agents are installed as skills under `~/.gemini/skills/`. Each persona skill name matches the agent's last segment: `correctness-reviewer`, `security-reviewer`, `adversarial-reviewer`, etc. To dispatch a reviewer, activate the persona skill by name and pass the review context.
+
+**Parallel dispatch:** For each selected persona, use the `activate_skill` tool (or equivalent skill invocation) with the persona skill name and the review context as the prompt argument. Invoke all personas in a single batch so they run concurrently.
+
+**Sequential fallback:** If the platform does not support parallel skill activation, invoke each persona skill one at a time in this order: always-on personas first, then cross-cutting conditionals, then stack-specific conditionals, then CE agents. Collect each result before proceeding to the next.
+
+**Invocation pattern for each persona:**
+
+```
+Activate the {persona-name} skill.
+Pass the following review context:
+- Intent: {intent_summary}
+- Files: {file_list}
+- Diff: {diff_content}
+- PR context: {pr_metadata_or_empty}
+- Run ID: {run_id}
+- Reviewer name: {persona_name}
+- Standards paths (project-standards only): {standards_paths}
+```
+
+**CE always-on and conditional agents** follow the same pattern. Activate them by their skill names: `agent-native-reviewer`, `learnings-researcher`, `schema-drift-detector`, `deployment-verification-agent`.
+
 ### Stage 5: Merge findings
 
 Convert multiple reviewer compact JSON returns into one deduplicated, confidence-gated finding set. The compact returns contain merge-tier fields (title, severity, file, line, confidence, autofix_class, owner, requires_verification, pre_existing) plus the optional suggested_fix. Detail-tier fields (why_it_matters, evidence) are on disk in the per-agent artifact files and are not loaded at this stage.

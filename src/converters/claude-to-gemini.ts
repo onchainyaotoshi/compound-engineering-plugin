@@ -109,6 +109,12 @@ export function transformContentForGemini(body: string): string {
     return `the ${normalizeName(agentName)} skill`
   })
 
+  // 4. Rewrite narrative "Spawn X-reviewer as (parallel) sub-agent" → "Use the X-reviewer skill"
+  const spawnPattern = /Spawn\s+(?:each\s+)?(?:selected\s+)?([a-z][a-z0-9-]*(?:reviewer|analyst|specialist|oracle|sentinel|guardian|strategist|researcher|agent))(?:\s+as\s+(?:a\s+)?(?:parallel\s+)?sub-?agents?)?/gi
+  result = result.replace(spawnPattern, (_match, personaName: string) => {
+    return `Use the ${normalizeName(personaName)} skill`
+  })
+
   return result
 }
 
