@@ -375,7 +375,7 @@ Before spawning sub-agents, find the file paths (not contents) of all relevant s
 
 Pass the resulting path list to the `project-standards` persona inside a `<standards-paths>` block in its review context (see Stage 4). The persona reads the files itself, targeting only the sections relevant to the changed file types. This keeps the orchestrator's work cheap (path discovery only) and avoids bloating the subagent prompt with content the reviewer may not fully need.
 
-### Stage 4: Spawn sub-agents
+### Stage 4: Use the sub-agent skills
 
 #### Model tiering
 
