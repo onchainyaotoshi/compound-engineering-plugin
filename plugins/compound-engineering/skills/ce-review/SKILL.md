@@ -377,6 +377,22 @@ Pass the resulting path list to the `project-standards` persona inside a `<stand
 
 ### Stage 4: Use the sub-agent skills
 
+#### Skill name allowlist (hallucination guard)
+
+Before activating any sub-agent skill, confirm its name appears **verbatim** in this allowlist. If the name you are about to activate is not on the list, **STOP — you have hallucinated it.** Re-check the persona catalog and pick an existing name, or skip the dispatch. No valid review outcome involves fabricating a skill name.
+
+The 21 valid names:
+
+| Group | Skill names |
+|---|---|
+| Always-on persona (4) | `correctness-reviewer`, `testing-reviewer`, `maintainability-reviewer`, `project-standards-reviewer` |
+| Always-on CE (2) | `agent-native-reviewer`, `learnings-researcher` |
+| Cross-cutting conditional (8) | `security-reviewer`, `performance-reviewer`, `api-contract-reviewer`, `data-migrations-reviewer`, `reliability-reviewer`, `adversarial-reviewer`, `cli-readiness-reviewer`, `previous-comments-reviewer` |
+| Stack-specific conditional (5) | `dhh-rails-reviewer`, `kieran-rails-reviewer`, `kieran-python-reviewer`, `kieran-typescript-reviewer`, `julik-frontend-races-reviewer` |
+| CE conditional (2) | `schema-drift-detector`, `deployment-verification-agent` |
+
+The allowlist is the source of truth. If the diff seems to call for a specialized reviewer not on the list (`generalist`, `reviewer`, `code-reviewer`, `architect`, or any name you have invented), the correct fallback is the always-on set plus whatever cross-cutting actually applies — never fabricate a new name. An orchestrator that dispatches a non-existent skill wastes the dispatch budget on a no-op activation and corrupts the review outcome.
+
 #### Model tiering
 
 Persona sub-agents do focused, scoped work and should use a fast mid-tier model to reduce cost and latency without sacrificing review quality. The orchestrator itself stays on the default (most capable) model.
