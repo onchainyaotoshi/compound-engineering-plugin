@@ -6,7 +6,7 @@ argument-hint: "[blank to review current branch, or provide PR link]"
 
 # Code Review
 
-Reviews code changes using dynamically selected reviewer personas. Spawns parallel sub-agents that return structured JSON, then merges and deduplicates findings into a single report.
+Reviews code changes using dynamically selected reviewer personas. Spawns sub-agents (sequentially by default on Gemini CLI to avoid headless server-capacity pressure; parallel as an opt-in fast path) that return structured JSON, then merges and deduplicates findings into a single report.
 
 ## When to Use
 
@@ -452,9 +452,11 @@ Detail-tier fields (`why_it_matters`, `evidence`) are in the artifact file only.
 
 On Gemini CLI, persona agents are installed as skills under `~/.gemini/skills/`. Each persona skill name matches the agent's last segment: `correctness-reviewer`, `security-reviewer`, `adversarial-reviewer`, etc. To dispatch a reviewer, activate the persona skill by name and pass the review context.
 
-**Parallel dispatch:** For each selected persona, use the `activate_skill` tool (or equivalent skill invocation) with the persona skill name and the review context as the prompt argument. Invoke all personas in a single batch so they run concurrently.
+**Sequential dispatch (default on Gemini CLI):** Invoke each persona skill one at a time using `activate_skill` (or equivalent skill invocation) with the persona skill name and the review context as the prompt argument. Order: always-on personas first, then cross-cutting conditionals, then stack-specific conditionals, then CE agents. Collect each result before proceeding to the next.
 
-**Sequential fallback:** If the platform does not support parallel skill activation, invoke each persona skill one at a time in this order: always-on personas first, then cross-cutting conditionals, then stack-specific conditionals, then CE agents. Collect each result before proceeding to the next.
+**Why sequential by default:** The headless `cloudcode-pa.googleapis.com` deployment shows acute server-capacity pressure when 6+ persona skills activate concurrently — observed empirically 2026-04-15 via repeated `MODEL_CAPACITY_EXHAUSTED` 429 batch failures on `gemini-3.1-pro-preview`, `gemini-2.5-pro`, and `gemini-2.5-flash` at the persona-spawn step. Each persona spawn issues an independent API call; concurrent N-spawn × inflight backoff retries × 3-second base delay grows quadratically and exceeds typical headless dispatch timeout budgets (10 min). Sequential dispatch keeps API call concurrency at 1, fitting within available server slots and completing within budget.
+
+**Parallel dispatch (opt-in fast path):** When server capacity is plentiful (e.g., dedicated GCP project with reserved Vertex quota, off-peak Pro deployment usage, or Flash-Lite bucket with headroom), invoke all selected personas in a single batch so they run concurrently. ~3-5× faster wall time. Validate by probe before relying on it: a successful single-call `gemini -p "ping" -m <model>` is necessary but not sufficient — actual concurrent-spawn capacity is what matters. ARP `/arp --dry-run` against a small PR is the only honest probe.
 
 **Invocation pattern for each persona:**
 
